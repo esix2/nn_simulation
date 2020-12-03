@@ -1,0 +1,9 @@
+pandas
+numpy
+scipy
+matplotlib
+scikit-learn
+statsmodels
+tensorflow-gpu=1.09.0
+h5py
+seaborn

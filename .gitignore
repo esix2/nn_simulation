@@ -13,10 +13,15 @@ develop-eggs/
 dist/
 downloads/
 eggs/
+examples/
+MNIST/
 .eggs/
 lib/
 lib64/
 parts/
+samples/
+save/
+saved-hoda/
 sdist/
 var/
 wheels/
