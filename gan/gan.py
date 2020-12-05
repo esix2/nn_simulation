@@ -11,13 +11,15 @@ import pylab
 import numpy as np
 from HodaDataset import HodaDataset
 from torch.utils.data import DataLoader
+from timeit import default_timer as timer
 
 # Hyper-parameters
 latent_size = 64
 hidden_size = 256
 image_size = 784
-num_epochs = 300
-batch_size = 32
+num_epochs = 20000
+set_size = 60000
+batch_size = 2
 sample_dir = 'samples'
 save_dir = 'save'
 
@@ -53,7 +55,7 @@ mnist = torchvision.datasets.MNIST(root='../data/',
 
 use_cuda = not args.no_cuda and torch.cuda.is_available()
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
-data_loader = DataLoader(dataset=HodaDataset(train=True,M=60000), batch_size=batch_size, shuffle=True, **kwargs)
+data_loader = DataLoader(dataset=HodaDataset(train=True,M=set_size), batch_size=batch_size, shuffle=True, **kwargs)
 # Discriminator
 D = nn.Sequential(
     nn.Linear(image_size, hidden_size),
@@ -76,6 +78,8 @@ G = nn.Sequential(
 #D = D.cuda()
 #G = G.cuda()
 device = torch.device("cuda" if use_cuda else "cpu")
+#G = nn.DataParallel(G, device_ids=[0,1])
+#D = nn.DataParallel(D, device_ids=[0,1])
 G = G.to(device)
 D = D.to(device)
 
@@ -101,6 +105,7 @@ fake_scores = np.zeros(num_epochs)
 # Start training
 total_step = len(data_loader)
 for epoch in range(num_epochs):
+    start = timer()
     for i, (images, _) in enumerate(data_loader):
         images = images.view(batch_size, -1).to(device)
         images = Variable(images)
@@ -163,10 +168,14 @@ for epoch in range(num_epochs):
         fake_scores[epoch] = fake_scores[epoch]*(i/(i+1.)) + fake_score.mean().data*(1./(i+1.))
         
         if (i+1) % 200 == 0:
-            print('Epoch [{}/{}], Step [{}/{}], d_loss: {:.4f}, g_loss: {:.4f}, D(x): {:.2f}, D(G(z)): {:.2f}' 
-                  .format(epoch, num_epochs, i+1, total_step, d_loss.data, g_loss.data, 
+            end = timer()
+            elapsed = end - start
+            print('Time Elapsed {:.3}, Epoch [{}/{}], Step [{}/{}], d_loss: {:.4f}, g_loss: {:.4f}, D(x): {:.2f}, D(G(z)): {:.2f}' 
+                  .format(elapsed, epoch, num_epochs, i+1, total_step, d_loss.data, g_loss.data, 
                           real_score.mean().data, fake_score.mean().data))
+            start = timer()
     
+
     # Save real images
     if (epoch+1) == 1:
         images = images.view(images.size(0), 1, 28, 28)
