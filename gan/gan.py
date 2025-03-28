@@ -9,7 +9,7 @@ from torch.autograd import Variable
 import matplotlib.pyplot as plt
 import pylab
 import numpy as np
-from HodaDataset import HodaDataset
+# from HodaDataset import HodaDataset
 from torch.utils.data import DataLoader
 from timeit import default_timer as timer
 
@@ -49,13 +49,13 @@ mnist = torchvision.datasets.MNIST(root='../data/',
                                    download=True)
 
 # Data loader
-#data_loader = torch.utils.data.DataLoader(dataset=mnist,
-#                                          batch_size=batch_size, 
-#                                          shuffle=True)
+data_loader = torch.utils.data.DataLoader(dataset=mnist,
+                                         batch_size=batch_size, 
+                                         shuffle=True)
 
 use_cuda = not args.no_cuda and torch.cuda.is_available()
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
-data_loader = DataLoader(dataset=HodaDataset(train=True,M=set_size), batch_size=batch_size, shuffle=True, **kwargs)
+# data_loader = DataLoader(dataset=HodaDataset(train=True,M=set_size), batch_size=batch_size, shuffle=True, **kwargs)
 # Discriminator
 D = nn.Sequential(
     nn.Linear(image_size, hidden_size),
